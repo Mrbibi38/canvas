@@ -1,0 +1,52 @@
+body {
+    margin: 0;
+    padding: 1rem;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.canvas-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80%; /* Full width for responsiveness */
+    height: auto;
+}
+
+canvas {
+    border: 1px solid black;
+    cursor: crosshair;
+    width: 90vw; /* Responsive canvas width */
+    height: 40vh; /* Responsive height */
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.buttons button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.colors {
+    display: flex;
+    flex-wrap: wrap; /* Flex-wrap for color buttons on small screens */
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.colors button {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 4px 4px;
+    cursor: pointer;
+}

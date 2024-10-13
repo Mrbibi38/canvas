@@ -1,0 +1,10 @@
+# Set LF for all text files
+* text=auto
+
+# Ensure LF for JavaScript, HTML, CSS files
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+
+# Set specific line endings for JSON files
+*.json text eol=lf
