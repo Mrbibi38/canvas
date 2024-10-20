@@ -3,21 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-time Update Example</title>
+    <title>Collaborative Drawing Canvas</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <h2>Collaborative Drawing Canvas</h2>
+    <header class="site-header">
+        <div class="wrapper site-header__wrapper">
+            <div class="start">
+                <img src="./img/paint_icon.png" alt="Icon">
+                <img src="./img/whiteboard_icon.png" alt="Icon">
+                <h1>Whiteboard</h1>
+            </div>
+            <div class="middle"></div>
+            <div class="end">
+                <div class="login">
+                    <!-- Login Status -->
+                    <div id="loginStatus">
+                        Logged in as: <span id="userRole">Student</span>
+                    </div>
+                    <!-- Login Button -->
+                    <button id="loginButton" class="login-button" onclick="loginAsTeacher()">Login as Teacher</button> 
+                </div>
+            </div>
+        </div>
+    </header>
 
     <!-- The drawing canvas -->
     <div class="canvas-container">
         <canvas id="canvas"></canvas>
-        <div class="colors"></div>
-    </div>
+        <div class="toolbar">
+            <!-- Line Thickness Slider -->
+            <div class="thickness-slider">
+                <label for="lineThickness">Line size: </label>
+                <input type="range" id="lineThickness" min="1" max="10" value="2">
+                <div class="lineThicknessValue"></div>
+            </div>
+            <div class="colors">
+                <div class="colors-label">
+                    <label for="lineThickness">Line color: </label>
+                </div>
+                <div class="colors-btns">
+                    <!-- Color buttons will be added here dynamically -->
+                </div>
+            </div>
+            <button id="clearButton" class="clear-button" onclick="clearArea()">Clear Area</button>
 
-    <div class="buttons">
-        <button id="clearButton" onclick="javascript:clearArea();return false;">Clear Area</button>
+
+        </div>
     </div>
 
     <script src="app.js"></script>
