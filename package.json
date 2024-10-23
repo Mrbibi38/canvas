@@ -11,6 +11,8 @@
   "keywords": [],
   "description": "",
   "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
     "websocket": "^1.0.35",
     "ws": "^8.18.0"
   }
