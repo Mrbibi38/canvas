@@ -262,6 +262,7 @@ function changeCalloutContentForTeacher() {
     calloutContents[0].textContent = 'You can now draw on the canvas. The student connected to this session will see your drawings.';
     isTeacher = true;  // Set role to teacher
     initializeToolsBar();
+    canvas.style.cursor = 'crosshair';
 }
 
 function changeCalloutContentForStudent() {
@@ -269,6 +270,7 @@ function changeCalloutContentForStudent() {
     calloutContents[0].textContent = "You can view the whiteboard but you can't draw on it.";
     isTeacher = false;  // Set role to student
     initializeToolsBar();
+    canvas.style.cursor = 'not-allowed';
 }
 
 function showLoginButton() {

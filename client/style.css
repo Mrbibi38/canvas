@@ -162,7 +162,8 @@ canvas {
     margin: 15% auto; /* 15% from the top and centered */
     padding: 5px 20px 20px 20px;
     border-radius: 10px;
-    width: 30%; /* Could be more or less, depending on screen size */
+    width: 50%; /* Could be more or less, depending on screen size */
+    min-width: 30%;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
