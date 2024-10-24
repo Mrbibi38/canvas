@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collaborative Drawing Canvas</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/833730d39f.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <header class="site-header">
@@ -18,11 +19,12 @@
             <div class="end">
                 <div class="login">
                     <!-- Login Status -->
-                    <div id="loginStatus">
+                    <!-- <div id="loginStatus">
                         Logged in as: <span id="userRole">Student</span>
-                    </div>
+                    </div> -->
                     <!-- Login Button -->
                     <button id="loginButton" class="login-button" onclick="toggleLoginForm()">Login as Teacher</button> 
+                    <button id="logoutButton" class="logout-button" onclick="logout()">Disconnect</button> 
                 </div>
             </div>
         </div>
@@ -38,6 +40,60 @@
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
             <button id="submitLogin" onclick="loginAsTeacher()">Login</button>
+        </div>
+    </div>
+
+    <!-- Connection Success Modal -->
+    <div id="successModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="toggleSuccessModal()">&times;</span>
+            <h2><i class="fa-regular fa-circle-check"></i> Connection Successful!</h2>
+            <p>You are now logged in as a teacher.</p>
+            <button onclick="toggleSuccessModal()">Continue</button>
+        </div>
+    </div>
+
+    <!-- Connection Fail Modal -->
+    <div id="failModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="toggleFailModal()">&times;</span>
+            <h2><i class="fa-solid fa-triangle-exclamation"></i> Connection Failed</h2>
+            <p>Login failed. Please check your credentials and try again.</p>
+            <button onclick="toggleFailModal()">Continue</button>
+        </div>
+    </div>
+
+    <!-- Disconnect Modal -->
+    <div id="disconnectModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="toggleDisconnectModal()">&times;</span>
+            <h2><i class="fa-solid fa-arrow-right-from-bracket"></i> Disconnected</h2>
+            <p>You have been successfully disconnected.</p>
+            <button onclick="toggleDisconnectModal()">Continue</button>
+        </div>
+    </div>
+
+    <!-- Unauthorized Modal -->
+    <div id="unauthorizedModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="toggleUnauthorizedModal()">&times;</span>
+            <h2><i class="fa-solid fa-ban"></i> Unauthorized Access</h2>
+            <p>You do not have permission to access this feature. Please log in as a teacher.</p>
+            <button onclick="toggleUnauthorizedModal()">Continue</button>
+        </div>
+    </div>
+
+    <div class="callout">
+        <div class="callout-header">
+            <span>
+                <i class="fa-solid fa-circle-info"></i>
+            </span>
+            <div class="callout-header-text">
+                Logged as Student
+            </div> 
+        </div>
+        <div class="callout-content">
+            You can view the whiteboard but you can't draw on it.
         </div>
     </div>
 
@@ -59,7 +115,7 @@
                     <!-- Color buttons will be added here dynamically -->
                 </div>
             </div>
-            <button id="clearButton" class="clear-button" onclick="clearArea()">Clear Area</button>
+            <button id="clearButton" class="clear-button" onclick="clearArea()">Clear whiteboard</button>
         </div>
     </div>
 

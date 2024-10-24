@@ -9,8 +9,8 @@ body {
 }
 
 .site-header {
+    background-color: #f9f9f9;
     width: 100%;
-    margin-bottom: 2rem;
     box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
     padding: 1rem;
 }
@@ -52,28 +52,60 @@ body {
     flex: 1;
 }
 
-header .end button {
+/* header .end button {
     margin: 5px;
-    padding: 5px 10px;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+} */
+
+.login-button {
+    display: block;
+    margin: 5px;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #4CAF50;
+}
+
+.logout-button {
+    display: none;
+    margin: 5px;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #F44336;
 }
 
 canvas {
     background-color: white;
-    cursor: crosshair;
+    cursor: not-allowed;
     border: 2px solid #ddd;
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 80vw;
-    height: 60vh;
+    height: 50vh;
 }
 
 .toolbar {
     font-size: 1.5rem;
     font-weight: bold;
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
     margin-top: 10px;
+}
+
+.toolbar button {
+    font-size: 1rem;
+    margin: 5px;
+    padding: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .thickness-slider {
@@ -134,6 +166,22 @@ canvas {
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+#successModal i{
+    color: #4CAF50;
+}
+
+#failModal i{
+    color: #FFA500;
+}
+
+#disconnectModal i{
+    color: #aaa;
+}
+
+#unauthorizedModal i{
+    color: #F44336;
+}
+
 /* Close button */
 .close {
     color: #aaa;
@@ -174,4 +222,36 @@ button#submitLogin {
 
 button#submitLogin:hover {
     background-color: #45a049;
+}
+
+.callout {
+    max-width: 50%;
+    text-wrap: wrap;
+    background-color: #f9f9f9; /* Light background */
+    border-left: 4px solid #007acc; /* Blue left border */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 16px; /* Padding around content */
+    margin: 16px 0; /* Margin for spacing */
+}
+
+.callout-header {
+    display: flex; /* Flexbox for alignment */
+    align-items: center; /* Center items vertically */
+    margin-bottom: 8px; /* Space below header */
+    font-weight: bold;
+}
+
+.callout-header span {
+    margin-right: 8px; /* Space between icon and text */
+}
+
+.callout-header i {
+    color: #007acc; /* Icon color */
+    font-size: 1.2rem;
+}
+
+.callout-content {
+    font-size: 14px; /* Font size for content */
+    color: #333; /* Darker text color */
 }

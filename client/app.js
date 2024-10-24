@@ -2,6 +2,11 @@ const socket = new WebSocket('ws://localhost:8080');
 const canvas = document.getElementById('canvas');
 const thicknessSlider = document.querySelector('#lineThickness');
 const lineThicknessValue = document.querySelector('.lineThicknessValue');
+const calloutHeadersText = document.querySelectorAll('.callout-header-text');
+const calloutContents = document.querySelectorAll('.callout-content');
+const loginButton = document.querySelectorAll('.login-button');
+const logoutButton = document.querySelectorAll('.logout-button');
+const toolbar = document.querySelector('.toolbar');
 const context = canvas.getContext('2d');
 
 let isDrawing = false;
@@ -12,25 +17,16 @@ let lineWidth = thicknessSlider.value;
 
 let linesHistory = [];  
 let sendingHistory = false;
+let isTeacher = false;  // New flag to track if the user is a teacher
 
 // Function to store token in localStorage or cookie
 function storeToken(token) {
-    // Storing in localStorage (uncomment to use)
     localStorage.setItem('clientToken', token);
-
-    // Or store in a cookie (uncomment to use)
-    // document.cookie = `clientToken=${token}; path=/; secure; SameSite=Strict;`;
 }
 
 // Function to retrieve token from localStorage or cookie
 function getToken() {
-    // Retrieving from localStorage (uncomment to use)
-    const token = localStorage.getItem('clientToken');
-
-    // Or retrieve from cookie (uncomment to use)
-    // const token = document.cookie.split('; ').find(row => row.startsWith('clientToken=')).split('=')[1];
-
-    return token;
+    return localStorage.getItem('clientToken');
 }
 
 // Adjust canvas size for different devices
@@ -82,6 +78,14 @@ function initializeThicknessSlider() {
     });
 }
 
+function initializeToolsBar() {
+    if(!isTeacher) {
+        toolbar.style.display = 'none';
+    } else {
+        toolbar.style.display = 'flex';
+    }
+}
+
 function updateLineWidth(value) {
     lineWidth = value;
     context.lineWidth = lineWidth;
@@ -106,6 +110,12 @@ canvas.addEventListener('touchmove', (e) => {
 canvas.addEventListener('touchend', stopDrawing);
 
 function startDrawing(clientX, clientY) {
+    if (!isTeacher) {
+        // alert('You are not authorized to draw on the canvas.');
+        toggleUnauthorizedModal();
+        return;  // Prevent drawing if not a teacher
+    }
+
     const mousePos = getMousePos(clientX, clientY);
     x = mousePos.x;
     y = mousePos.y;
@@ -113,7 +123,7 @@ function startDrawing(clientX, clientY) {
 }
 
 function draw(clientX, clientY) {
-    if (!isDrawing) return;
+    if (!isDrawing || !isTeacher) return;  // Prevent drawing if not a teacher or if not currently drawing
 
     const mousePos = getMousePos(clientX, clientY);
     const newLine = { x1: x, y1: y, x2: mousePos.x, y2: mousePos.y, color: currentColor, width: lineWidth };
@@ -208,6 +218,143 @@ window.onclick = (event) => {
     }
 }
 
-// Initialize components
+async function loginAsTeacher() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    let clientToken = localStorage.getItem('clientToken');
+    if (!clientToken) {
+        alert('No client token found... Please refresh the page to get a client token.');
+        return;
+    }
+
+    const loginData = {
+        username,
+        password,
+        clientToken
+    };
+
+    try {
+        const response = await fetch('http://localhost:8888/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(loginData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            console.log('Login successful:', result.message);
+            if (result.newToken) {
+                localStorage.setItem('clientToken', result.newToken);
+            }
+            toggleLoginForm();
+            changeCalloutContentForTeacher();
+            hideLoginButton();
+            showLogoutButton();
+            toggleSuccessModal(); // Show success modal
+        } else {
+            console.error('Login failed:', result.message);
+            toggleFailModal(); // Show fail modal
+        }
+    } catch (error) {
+        console.error('Error logging in:', error);
+        toggleFailModal(); // Show fail modal
+    }
+}
+
+// Function to change callout content when logged as a teacher
+function changeCalloutContentForTeacher() {
+    calloutHeadersText[0].textContent = 'Logged as teacher';
+    calloutContents[0].textContent = 'You can now draw on the canvas. The student connected to this session will see your drawings.';
+    isTeacher = true;  // Set role to teacher
+    initializeToolsBar();
+}
+
+function changeCalloutContentForStudent() {
+    calloutHeadersText[0].textContent = 'Logged as student';
+    calloutContents[0].textContent = "You can view the whiteboard but you can't draw on it.";
+    isTeacher = false;  // Set role to student
+    initializeToolsBar();
+}
+
+function showLoginButton() {
+    loginButton.forEach(button => button.style.display = 'block');
+}
+
+function hideLoginButton() {
+    loginButton.forEach(button => button.style.display = 'none');
+}
+
+function showLogoutButton() {
+    logoutButton.forEach(button => button.style.display = 'block');
+}
+
+function hideLogoutButton() {
+    logoutButton.forEach(button => button.style.display = 'none');
+}
+
+// Logout function
+async function logout() {
+    const clientToken = getToken();  // Get the current token from localStorage
+
+    if (!clientToken) {
+        alert('No client token found... You are not logged in.');
+        return;
+    }
+
+    // Send a logout request to the server
+    try {
+        const response = await fetch('http://localhost:8888/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ clientToken })
+        });
+
+        if (response.ok) {
+            console.log('Logout successful');
+            // localStorage.removeItem('clientToken');  // Clear the token on client side
+            changeCalloutContentForStudent();  // Revert UI to student mode
+            hideLogoutButton();
+            showLoginButton();
+            toggleDisconnectModal();  // Show disconnect modal
+            isTeacher = false;  // Reset role to student
+        } else {
+            console.error('Logout failed');
+        }
+    } catch (error) {
+        console.error('Error logging out:', error);
+    }
+}
+
+// Function to toggle success modal
+function toggleSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+
+// Function to toggle fail modal
+function toggleFailModal() {
+    const modal = document.getElementById('failModal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+
+// Function to toggle disconnect modal
+function toggleDisconnectModal() {
+    const modal = document.getElementById('disconnectModal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleUnauthorizedModal() {
+    const modal = document.getElementById("unauthorizedModal");
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+
+// Initialize canvas and controls
 initializeColors();
 initializeThicknessSlider();
+initializeToolsBar();
