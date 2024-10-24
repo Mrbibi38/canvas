@@ -19,14 +19,14 @@ let linesHistory = [];
 let sendingHistory = false;
 let isTeacher = false;  // New flag to track if the user is a teacher
 
-// Function to store token in localStorage or cookie
+// Function to store token in sessionStorage or cookie
 function storeToken(token) {
-    localStorage.setItem('clientToken', token);
+    sessionStorage.setItem('clientToken', token);
 }
 
-// Function to retrieve token from localStorage or cookie
+// Function to retrieve token from sessionStorage or cookie
 function getToken() {
-    return localStorage.getItem('clientToken');
+    return sessionStorage.getItem('clientToken');
 }
 
 // Adjust canvas size for different devices
@@ -222,46 +222,37 @@ async function loginAsTeacher() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    let clientToken = localStorage.getItem('clientToken');
+    const clientToken = getToken();
     if (!clientToken) {
         alert('No client token found... Please refresh the page to get a client token.');
         return;
     }
 
-    const loginData = {
-        username,
-        password,
-        clientToken
-    };
+    const loginData = { username, password, clientToken };
 
     try {
         const response = await fetch('http://localhost:8888/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(loginData)
         });
 
         const result = await response.json();
-
         if (response.ok) {
             console.log('Login successful:', result.message);
-            if (result.newToken) {
-                localStorage.setItem('clientToken', result.newToken);
-            }
+            sessionStorage.setItem('clientToken', result.newToken || clientToken);
             toggleLoginForm();
             changeCalloutContentForTeacher();
             hideLoginButton();
             showLogoutButton();
-            toggleSuccessModal(); // Show success modal
+            toggleSuccessModal();
         } else {
             console.error('Login failed:', result.message);
-            toggleFailModal(); // Show fail modal
+            toggleFailModal();
         }
     } catch (error) {
         console.error('Error logging in:', error);
-        toggleFailModal(); // Show fail modal
+        toggleFailModal();
     }
 }
 
@@ -298,7 +289,7 @@ function hideLogoutButton() {
 
 // Logout function
 async function logout() {
-    const clientToken = getToken();  // Get the current token from localStorage
+    const clientToken = getToken();  // Get the current token from sessionStorage
 
     if (!clientToken) {
         alert('No client token found... You are not logged in.');
@@ -317,7 +308,7 @@ async function logout() {
 
         if (response.ok) {
             console.log('Logout successful');
-            // localStorage.removeItem('clientToken');  // Clear the token on client side
+            // sessionStorage.removeItem('clientToken');  // Clear the token on client side
             changeCalloutContentForStudent();  // Revert UI to student mode
             hideLogoutButton();
             showLoginButton();
