@@ -22,11 +22,24 @@
                         Logged in as: <span id="userRole">Student</span>
                     </div>
                     <!-- Login Button -->
-                    <button id="loginButton" class="login-button" onclick="loginAsTeacher()">Login as Teacher</button> 
+                    <button id="loginButton" class="login-button" onclick="toggleLoginForm()">Login as Teacher</button> 
                 </div>
             </div>
         </div>
     </header>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="toggleLoginForm()">&times;</span>
+            <h2>Login as Teacher</h2>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button id="submitLogin" onclick="loginAsTeacher()">Login</button>
+        </div>
+    </div>
 
     <!-- The drawing canvas -->
     <div class="canvas-container">
@@ -47,8 +60,6 @@
                 </div>
             </div>
             <button id="clearButton" class="clear-button" onclick="clearArea()">Clear Area</button>
-
-
         </div>
     </div>
 
