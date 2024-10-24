@@ -1,4 +1,7 @@
-const socket = new WebSocket('ws://localhost:8080');
+const API_URL = 'http://localhost:8888';
+const WS_URL = 'ws://localhost:8080';
+
+const socket = new WebSocket(WS_URL);
 const canvas = document.getElementById('canvas');
 const thicknessSlider = document.querySelector('#lineThickness');
 const lineThicknessValue = document.querySelector('.lineThicknessValue');
@@ -231,7 +234,7 @@ async function loginAsTeacher() {
     const loginData = { username, password, clientToken };
 
     try {
-        const response = await fetch('http://localhost:8888/login', {
+        const response = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(loginData)
@@ -300,7 +303,7 @@ async function logout() {
 
     // Send a logout request to the server
     try {
-        const response = await fetch('http://localhost:8888/logout', {
+        const response = await fetch(`${API_URL}/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

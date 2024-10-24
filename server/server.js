@@ -1,12 +1,14 @@
 const WebSocket = require("ws");
 const { v4: uuidv4 } = require('uuid');  // UUID package to generate unique tokens
-const wss = new WebSocket.Server({ host: '0.0.0.0', port: 8080 });
+
+const WS_PORT = 8080;
+const wss = new WebSocket.Server({ host: '0.0.0.0', port: WS_PORT });
 
 // Express server setup
 const cors = require('cors');
 const express = require('express');
 const app = express();
-const PORT = 8888;
+const API_PORT = 8888;
 
 // Enable JSON parsing for the Express app
 app.use(express.json());
@@ -83,7 +85,7 @@ wss.on("connection", function connection(ws) {
     });
 });
 
-console.log('WebSocket server running on ws://localhost:8080');
+console.log(`WebSocket server running on ws://localhost:${API_PORT}`);
 
 // Route for login
 app.post('/login', (req, res) => {
@@ -126,6 +128,6 @@ app.post('/logout', (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log(`Express server running on http://localhost:${PORT}`);
+app.listen(API_PORT, () => {
+    console.log(`Express server running on http://localhost:${API_PORT}`);
 });
