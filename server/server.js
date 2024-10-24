@@ -1,9 +1,19 @@
 const WebSocket = require("ws");
+const { v4: uuidv4 } = require('uuid');  // UUID package to generate unique tokens
 
 const wss = new WebSocket.Server({ host: '0.0.0.0', port: 8080 });
 
+// Map to store clients and their tokens
+const clients = new Map();
+
 wss.on("connection", function connection(ws) {
-    console.log("A client connected");
+    const clientToken = uuidv4();  // Generate a unique token for the client
+    clients.set(ws, clientToken);   // Store the token with the WebSocket connection
+
+    console.log(`A client connected with token: ${clientToken}`);
+    
+    // Send the token back to the client
+    ws.send(JSON.stringify({ token: clientToken }));
 
     // Handle incoming messages
     ws.on("message", function incoming(message) {
@@ -18,9 +28,7 @@ wss.on("connection", function connection(ws) {
         // Ensure the message is a string before broadcasting
         if (typeof message === 'string') {
             const parsedMessage = JSON.parse(message);  // Parse the incoming message
-
             console.log("Parsed Message: ", parsedMessage);
-            
 
             // Check if the message is a clear board command
             if (parsedMessage.clearBoard) {
@@ -47,7 +55,9 @@ wss.on("connection", function connection(ws) {
     });
 
     ws.on("close", function close() {
-        console.log("A client disconnected");
+        const clientToken = clients.get(ws); // Retrieve the token of the disconnected client
+        console.log(`A client disconnected with token: ${clientToken}`);
+        clients.delete(ws);  // Remove the client from the map
     });
 });
 

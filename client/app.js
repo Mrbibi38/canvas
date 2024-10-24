@@ -12,6 +12,26 @@ let lineWidth = thicknessSlider.value;  // Track the current line width
 let linesHistory = [];  // Local drawing history (to send to the server)
 let receivedHistory = [];  // History received from the server (to be drawn)
 
+// Function to store token in localStorage or cookie
+function storeToken(token) {
+    // Storing in localStorage (uncomment to use)
+    localStorage.setItem('clientToken', token);
+
+    // Or store in a cookie (uncomment to use)
+    // document.cookie = `clientToken=${token}; path=/; secure; SameSite=Strict;`;
+}
+
+// Function to retrieve token from localStorage or cookie
+function getToken() {
+    // Retrieving from localStorage (uncomment to use)
+    const token = localStorage.getItem('clientToken');
+
+    // Or retrieve from cookie (uncomment to use)
+    // const token = document.cookie.split('; ').find(row => row.startsWith('clientToken=')).split('=')[1];
+
+    return token;
+}
+
 // Adjust canvas size for different devices
 function resizeCanvas() {
     canvas.width = canvas.offsetWidth;  // Set internal width based on CSS
@@ -137,6 +157,12 @@ function sendNewLineToServer(newLine) {
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
+
+    // Check if the message contains the token
+    if (data.token) {
+        storeToken(data.token);  // Store the token in localStorage or cookie
+        console.log('Received client token: ', data.token);
+    }
 
     if (data.clearBoard) {
         clearArea();
