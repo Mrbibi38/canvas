@@ -1,6 +1,6 @@
 const WebSocket = require("ws");
 const { v4: uuidv4 } = require("uuid"); // UUID package to generate unique tokens
-const bcrypt = require("bcrypt"); // For password hashing and verification
+const bcrypt = require("bcryptjs"); // For password hashing and verification
 const mysql = require("mysql2/promise"); // MySQL database library
 
 const WS_PORT = 8080;
@@ -20,10 +20,10 @@ app.use(cors()); // Allow all origins
 
 // MySQL connection pool
 const pool = mysql.createPool({
-  host: "10.0.20.10",
-  user: "canavas_user", // Replace with your MySQL username
-  password: "password", // Replace with your MySQL password
-  database: "canvas", // Replace with your database name
+  host: "10.0.10.10", // Replace with your MySQL host
+  user: "canvas_user", // Replace with your MySQL username
+  password: "Masterrie2024!", // Replace with your MySQL password
+  database: "CANVAS", // Replace with your database name
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
