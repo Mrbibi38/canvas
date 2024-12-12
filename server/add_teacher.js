@@ -19,7 +19,9 @@ async function addTeacher(username, plainPassword) {
 }
 
 // Add a teacher with hashed password
-addTeacher("test_teacher", "test_password");
+addTeacher("prof", "pass");
+addTeacher("test", "pass");
+addTeacher("toto", "pass");
 
 // Exit the script
 process.exit(0);

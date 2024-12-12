@@ -20,7 +20,7 @@ app.use(cors()); // Allow all origins
 
 // MySQL connection pool
 const pool = mysql.createPool({
-  host: "10.0.10.10", // Replace with your MySQL host
+  host: "10.0.20.10", // Replace with your MySQL host
   user: "canvas_user", // Replace with your MySQL username
   password: "Masterrie2024!", // Replace with your MySQL password
   database: "CANVAS", // Replace with your database name
@@ -97,6 +97,10 @@ app.post("/login", async (req, res) => {
     // Query the database for the user's credentials
     const [rows] = await pool.query("SELECT * FROM teachers WHERE username = ?", [username]);
 
+    if (rows.length === 0) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+  
     if (rows.length > 0) {
       const teacher = rows[0];
 
