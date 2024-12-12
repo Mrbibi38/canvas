@@ -20,48 +20,37 @@ let lineWidth = thicknessSlider.value;
 
 let linesHistory = [];  
 let sendingHistory = false;
-let isTeacher = false;  // New flag to track if the user is a teacher
+let isTeacher = false;  // Tracks if the user is a teacher
 
-// Function to store token in sessionStorage or cookie
+// Store and retrieve client tokens
 function storeToken(token) {
     sessionStorage.setItem('clientToken', token);
 }
 
-// Function to retrieve token from sessionStorage or cookie
 function getToken() {
     return sessionStorage.getItem('clientToken');
 }
 
-// Adjust canvas size for different devices
+// Adjust canvas size for responsiveness
 function resizeCanvas() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-}
-
-window.addEventListener('resize', () => {
-    resizeCanvas();
     redrawHistory(); // Redraw lines on resize
-});
+}
+window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// Initialize colors and thickness
+// Initialize canvas tools and UI elements
 function initializeColors() {
     const colors = ['black', 'red', 'green', 'blue', 'yellow', 'orange', 'purple', 'brown', 'pink', 'gray'];
     const colorsButtons = document.querySelector('.colors-btns');
 
     colors.forEach(color => {
-        const button = createColorButton(color);
+        const button = document.createElement('button');
+        button.style.backgroundColor = color;
+        button.addEventListener('click', () => setCurrentColor(color));
         colorsButtons.appendChild(button);
     });
-}
-
-function createColorButton(color) {
-    const button = document.createElement('button');
-    button.style.backgroundColor = color;
-    button.addEventListener('click', () => {
-        setCurrentColor(color);
-    });
-    return button;
 }
 
 function setCurrentColor(color) {
@@ -69,7 +58,6 @@ function setCurrentColor(color) {
     context.strokeStyle = color;
 }
 
-// Initialize line thickness
 function initializeThicknessSlider() {
     thicknessSlider.min = '1';
     thicknessSlider.max = '10';
@@ -77,25 +65,17 @@ function initializeThicknessSlider() {
     lineThicknessValue.innerHTML = `${lineWidth}px`;
 
     thicknessSlider.addEventListener('input', (e) => {
-        updateLineWidth(e.target.value);
+        lineWidth = e.target.value;
+        context.lineWidth = lineWidth;
+        lineThicknessValue.innerHTML = `${lineWidth}px`;
     });
 }
 
 function initializeToolsBar() {
-    if(!isTeacher) {
-        toolbar.style.display = 'none';
-    } else {
-        toolbar.style.display = 'flex';
-    }
+    toolbar.style.display = isTeacher ? 'flex' : 'none';
 }
 
-function updateLineWidth(value) {
-    lineWidth = value;
-    context.lineWidth = lineWidth;
-    lineThicknessValue.innerHTML = `${lineWidth}px`;
-}
-
-// Drawing functions
+// Drawing functionality
 canvas.addEventListener('mousedown', (e) => startDrawing(e.clientX, e.clientY));
 canvas.addEventListener('mousemove', (e) => draw(e.clientX, e.clientY));
 window.addEventListener('mouseup', stopDrawing);
@@ -114,11 +94,9 @@ canvas.addEventListener('touchend', stopDrawing);
 
 function startDrawing(clientX, clientY) {
     if (!isTeacher) {
-        // alert('You are not authorized to draw on the canvas.');
         toggleUnauthorizedModal();
-        return;  // Prevent drawing if not a teacher
+        return;
     }
-
     const mousePos = getMousePos(clientX, clientY);
     x = mousePos.x;
     y = mousePos.y;
@@ -126,7 +104,7 @@ function startDrawing(clientX, clientY) {
 }
 
 function draw(clientX, clientY) {
-    if (!isDrawing || !isTeacher) return;  // Prevent drawing if not a teacher or if not currently drawing
+    if (!isDrawing || !isTeacher) return;
 
     const mousePos = getMousePos(clientX, clientY);
     const newLine = { x1: x, y1: y, x2: mousePos.x, y2: mousePos.y, color: currentColor, width: lineWidth };
@@ -161,7 +139,7 @@ function getMousePos(clientX, clientY) {
     };
 }
 
-// Socket communication
+// WebSocket communication
 function sendNewLineToServer(newLine) {
     sendingHistory = true;
     socket.send(JSON.stringify([newLine]));
@@ -169,26 +147,15 @@ function sendNewLineToServer(newLine) {
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    handleSocketMessage(data);
-};
-
-function handleSocketMessage(data) {
     if (data.clearBoard) {
         clearArea();
-        return;
-    }
-    if (data.token) {
+    } else if (data.token) {
         storeToken(data.token);
-        console.log('Received client token: ', data.token);
-        return;
+    } else if (!sendingHistory) {
+        data.forEach((line) => drawLine(context, line));
     }
-
-    if (sendingHistory) {
-        sendingHistory = false;
-        return;
-    }
-    data.forEach((line) => drawLine(context, line));
-}
+    sendingHistory = false;
+};
 
 // Clear the canvas
 function clearArea() {
@@ -196,161 +163,65 @@ function clearArea() {
     linesHistory = [];
 }
 
-function sendClearBoard() {
-    socket.send(JSON.stringify({ clearBoard: true }));
-}
-
-// Clear button handling
 const clearButton = document.getElementById('clearButton');
 clearButton.addEventListener('click', () => {
     clearArea();
-    sendClearBoard();
+    socket.send(JSON.stringify({ clearBoard: true }));
 });
 
-// Modal handling
-function toggleLoginForm() {
-    const modal = document.getElementById('loginModal');
-    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
-}
-
-// Close the modal if the user clicks outside of it
-window.onclick = (event) => {
-    const modal = document.getElementById('loginModal');
-    if (event.target === modal) {
-        toggleLoginForm();
-    }
-}
-
+// Login function
 async function loginAsTeacher() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-
     const clientToken = getToken();
+
     if (!clientToken) {
-        alert('No client token found... Please refresh the page to get a client token.');
+        alert('No client token found. Refresh the page to get one.');
         return;
     }
-
-    const loginData = { username, password, clientToken };
 
     try {
         const response = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(loginData)
+            body: JSON.stringify({ username, password, clientToken })
         });
 
-        const result = await response.json();
         if (response.ok) {
-            console.log('Login successful:', result.message);
-            sessionStorage.setItem('clientToken', result.newToken || clientToken);
-            toggleLoginForm();
+            const result = await response.json();
+            storeToken(result.newToken || clientToken);
             changeCalloutContentForTeacher();
-            hideLoginButton();
-            showLogoutButton();
-            toggleSuccessModal();
+            toggleLoginForm();
         } else {
-            console.error('Login failed:', result.message);
-            toggleFailModal();
+            alert('Login failed. Check your credentials.');
         }
     } catch (error) {
-        console.error('Error logging in:', error);
-        toggleFailModal();
+        console.error('Login error:', error);
     }
-}
-
-// Function to change callout content when logged as a teacher
-function changeCalloutContentForTeacher() {
-    calloutHeadersText[0].textContent = 'Logged as teacher';
-    calloutContents[0].textContent = 'You can now draw on the canvas. The student connected to this session will see your drawings.';
-    isTeacher = true;  // Set role to teacher
-    initializeToolsBar();
-    canvas.style.cursor = 'crosshair';
-}
-
-function changeCalloutContentForStudent() {
-    calloutHeadersText[0].textContent = 'Logged as student';
-    calloutContents[0].textContent = "You can view the whiteboard but you can't draw on it.";
-    isTeacher = false;  // Set role to student
-    initializeToolsBar();
-    canvas.style.cursor = 'not-allowed';
-}
-
-function showLoginButton() {
-    loginButton.forEach(button => button.style.display = 'block');
-}
-
-function hideLoginButton() {
-    loginButton.forEach(button => button.style.display = 'none');
-}
-
-function showLogoutButton() {
-    logoutButton.forEach(button => button.style.display = 'block');
-}
-
-function hideLogoutButton() {
-    logoutButton.forEach(button => button.style.display = 'none');
 }
 
 // Logout function
 async function logout() {
-    const clientToken = getToken();  // Get the current token from sessionStorage
+    const clientToken = getToken();
 
-    if (!clientToken) {
-        alert('No client token found... You are not logged in.');
-        return;
-    }
-
-    // Send a logout request to the server
     try {
         const response = await fetch(`${API_URL}/logout`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ clientToken })
         });
 
         if (response.ok) {
-            console.log('Logout successful');
-            // sessionStorage.removeItem('clientToken');  // Clear the token on client side
-            changeCalloutContentForStudent();  // Revert UI to student mode
-            hideLogoutButton();
-            showLoginButton();
-            toggleDisconnectModal();  // Show disconnect modal
-            isTeacher = false;  // Reset role to student
+            sessionStorage.removeItem('clientToken');
+            changeCalloutContentForStudent();
         } else {
-            console.error('Logout failed');
+            alert('Logout failed.');
         }
     } catch (error) {
-        console.error('Error logging out:', error);
+        console.error('Logout error:', error);
     }
 }
 
-// Function to toggle success modal
-function toggleSuccessModal() {
-    const modal = document.getElementById('successModal');
-    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
-}
-
-// Function to toggle fail modal
-function toggleFailModal() {
-    const modal = document.getElementById('failModal');
-    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
-}
-
-// Function to toggle disconnect modal
-function toggleDisconnectModal() {
-    const modal = document.getElementById('disconnectModal');
-    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
-}
-
-function toggleUnauthorizedModal() {
-    const modal = document.getElementById("unauthorizedModal");
-    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
-}
-
-// Initialize canvas and controls
 initializeColors();
 initializeThicknessSlider();
 initializeToolsBar();
